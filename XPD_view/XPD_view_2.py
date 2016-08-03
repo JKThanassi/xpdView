@@ -14,6 +14,7 @@ from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolBar
 import matplotlib.pyplot as plt
 from xray_vision.messenger.mpl.cross_section_2d import CrossSection2DMessenger
+from databroker_handler import DBHandler
 
 
 def data_gen(length):
@@ -121,7 +122,7 @@ class Display2(QtGui.QMainWindow):
         self.messenger.sl_update_image(0)
         self.data_dict = self.messenger._view._data_dict
         self.int_data_dict = dict()
-
+        self.databroker_data = DBHandler(self.data_dict, self.key_list)
         # This makes the layout for the main window
         self.frame = QtGui.QFrame()
         self.main_layout = QtGui.QVBoxLayout()
@@ -270,6 +271,8 @@ class Display2(QtGui.QMainWindow):
         refresh_path = QtGui.QAction('&Refresh', self)
         refresh_path.setShortcut('Ctrl+R')
         refresh_path.triggered.connect(self.refresh)
+
+        dbset = QtGui.QAction("%get databroker data", self)
 
         plt_action = QtGui.QAction("&Plot", self)
         plt_action.setShortcut("Ctrl+P")
