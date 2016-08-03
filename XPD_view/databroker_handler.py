@@ -75,3 +75,5 @@ class DBHandler:
     def get_images_range(self, db_start, db_stop):
         """this funciton will get all of the images
         """
+
+        for i in range()

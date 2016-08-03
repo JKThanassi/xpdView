@@ -273,6 +273,7 @@ class Display2(QtGui.QMainWindow):
         refresh_path.triggered.connect(self.refresh)
 
         dbset = QtGui.QAction("%get databroker data", self)
+        dbset.triggered.connect(self.databroker_data.get_images_range(-250, -1))
 
         plt_action = QtGui.QAction("&Plot", self)
         plt_action.setShortcut("Ctrl+P")
