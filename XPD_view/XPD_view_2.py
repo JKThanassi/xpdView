@@ -272,8 +272,8 @@ class Display2(QtGui.QMainWindow):
         refresh_path.setShortcut('Ctrl+R')
         refresh_path.triggered.connect(self.refresh)
 
-        dbset = QtGui.QAction("%get databroker data", self)
-        dbset.triggered.connect(lambda: self.update_slider_db(-250, -170))
+        dbset = QtGui.QAction("&get databroker data", self)
+        dbset.triggered.connect(self.update_slider_db)
 
         plt_action = QtGui.QAction("&Plot", self)
         plt_action.setShortcut("Ctrl+P")
@@ -460,10 +460,61 @@ class Display2(QtGui.QMainWindow):
         menu.show()
         menu.exec_()
 
-    def update_slider_db(self, start, stop):
-        self.DB.get_images_range(start, stop)
-        self.ctrls._slider_img.setMaximum(len(self.key_list)-1)
-        self.ctrls._spin_img.setMaximum(len(self.key_list) - 1)
+    def update_slider_db(self):
+
+        menu = QtGui.QDialog(self)
+        menu.setWindowTitle("Database slice options")
+        vbox = QtGui.QVBoxLayout()
+        slice_widgets_text = QtGui.QHBoxLayout()
+        slice_widgets = QtGui.QHBoxLayout()
+        start_label = QtGui.QLabel()
+        start_label.setText("Starting slice")
+        stop_label = QtGui.QLabel()
+        stop_label.setText("Stopping slice")
+
+        slice_widgets_text.addStretch()
+        slice_widgets_text.addWidget(start_label)
+        slice_widgets_text.addStretch()
+        slice_widgets_text.addWidget(stop_label)
+
+        start_input = QtGui.QSpinBox()
+        start_input.setMinimum(-1000)
+        start_input.setMaximum(1000)
+        stop_input = QtGui.QSpinBox()
+        stop_input.setMaximum(1000)
+        stop_input.setMinimum(-1000)
+
+        get_data_btn = QtGui.QPushButton()
+        get_data_btn.setText("Get Data!")
+        get_data_btn.clicked.connect(menu.close)
+        get_data_btn.clicked.connect(lambda:
+                                     self.DB.get_images_range(start_input.value(),
+                                                              stop_input.value()))
+
+        get_data_btn.clicked.connect(lambda:
+                                     self.ctrls._slider_img.setMaximum(len(self.key_list)-1))
+        get_data_btn.clicked.connect(lambda:
+                                     self.ctrls._spin_img.setMaximum(len(self.key_list) - 1))
+
+        slice_widgets.addStretch()
+        slice_widgets.addWidget(start_input)
+        slice_widgets.addStretch()
+        slice_widgets.addWidget(stop_input)
+
+        vbox.addStretch()
+        vbox.addLayout(slice_widgets_text)
+        vbox.addStretch()
+        vbox.addLayout(slice_widgets)
+        vbox.addStretch()
+        vbox.addWidget(get_data_btn)
+
+        menu.setLayout(vbox)
+        menu.exec_()
+
+
+
+
+
 
     def set_up_tool_bar(self):
         """
