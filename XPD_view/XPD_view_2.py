@@ -122,7 +122,7 @@ class Display2(QtGui.QMainWindow):
         self.messenger.sl_update_image(0)
         self.data_dict = self.messenger._view._data_dict
         self.int_data_dict = dict()
-        self.databroker_data = DBHandler(self.data_dict, self.key_list)
+        self.DB = DBHandler(self.data_dict, self.key_list)
         # This makes the layout for the main window
         self.frame = QtGui.QFrame()
         self.main_layout = QtGui.QVBoxLayout()
@@ -273,7 +273,7 @@ class Display2(QtGui.QMainWindow):
         refresh_path.triggered.connect(self.refresh)
 
         dbset = QtGui.QAction("%get databroker data", self)
-        dbset.triggered.connect(self.databroker_data.get_images_range(-250, -1))
+        dbset.triggered.connect(lambda: self.update_slider_db(-250, -170))
 
         plt_action = QtGui.QAction("&Plot", self)
         plt_action.setShortcut("Ctrl+P")
@@ -284,6 +284,7 @@ class Display2(QtGui.QMainWindow):
         filemenu = mainmenu.addMenu("&File")
         graph_menu = mainmenu.addMenu('&Reduced Representation')
         filemenu.addAction(setpath)
+        filemenu.addAction(dbset)
         filemenu.addAction(refresh_path)
         graph_menu.addAction(plt_action)
 
@@ -458,6 +459,11 @@ class Display2(QtGui.QMainWindow):
         menu.setLayout(vbox)
         menu.show()
         menu.exec_()
+
+    def update_slider_db(self, start, stop):
+        self.DB.get_images_range(start, stop)
+        self.ctrls._slider_img.setMaximum(len(self.key_list)-1)
+        self.ctrls._spin_img.setMaximum(len(self.key_list) - 1)
 
     def set_up_tool_bar(self):
         """
