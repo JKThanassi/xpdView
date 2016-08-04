@@ -11,8 +11,8 @@ class DBHandler:
         self.key_list = key_list
         self.data_dict = data_dict
 
-    def get_data(self, header_id=-1,
-                 check_new_data=True, img_field_auto=True, img_field=None):
+    def get_data(self, header_id=-1,check_new_data=True,
+                 img_field='pe1_image', dark_correction=True):
         """This method gets image data from a databroker header
 
         Parameters
@@ -27,20 +27,25 @@ class DBHandler:
 
         """
         header = self.get_header(header_id)
-        if img_field_auto and (img_field is None):
-            img_field_name = [key for key in header.descriptors[0]['data_keys']
-                              if key.endswith('_image')[0]]
+        if self.is_dark_tiff(header):
+            return None, None
+
+        if dark_correction:
+            img_data_uncorrected = np.asarray(get_images(header, img_field).get_frame(0))
+            img_data = self.dark_subtraction(img_data_uncorrected,
+                                             self.get_dark_tiff(header, img_field))
+            uid = "corrected:" + header['start']['uid']
+
         else:
-            img_field_name = img_field
-        img_data = np.asarray(get_images(header, img_field_name).get_frame(0))
-        uid = header['start']['uid']
+            img_data = np.asarray(get_images(header, img_field).get_frame(0))
+            uid = header['start']['uid']
 
         if self.is_new_data(uid) and check_new_data:
             return uid, img_data
         elif check_new_data is False:
             return uid, img_data
         else:
-            return None
+            return None, None
 
     def get_header(self, header_id=-1):
         """This method fetches a databroker header
@@ -90,10 +95,12 @@ class DBHandler:
 
         for i in range(db_start, db_stop):
             uid, img = self.get_data(header_id=i, check_new_data=False)
-
-            self.key_list.append(uid)
-            self.data_dict[uid] = img
-            print("db header " + str(i) + " with UID " + uid + " added to dict")
+            if (uid is not  None) and (img is not None):
+                self.key_list.append(uid)
+                self.data_dict[uid] = img
+                print("db header " + str(i) + " with UID " + uid + " added to dict")
+            else:
+                print("tiff was not added because it was a dark tiff or not a new tiff")
 
     def is_dark_tiff(self, header):
         """Checks if the current database header represents a dark tiff
@@ -108,11 +115,16 @@ class DBHandler:
         True if header represents dark tiff
         False if otherwise
         """
-        if 'sc_dk_field_uid' in header.start:
+        if 'sc_dk_field_uid' not in header.start:
             return True
         else:
             return False
 
-    def dark_subtraction(self, header):
+    def dark_subtraction(self, img, dark_img):
 
+        return img - dark_img
 
+    def get_dark_tiff(self, header, img_field):
+        dark_id = header.start.sc_dk_field_uid
+        dark_img = get_images(db[dark_id], img_field)
+        return np.asarray(dark_img).squeeze()
