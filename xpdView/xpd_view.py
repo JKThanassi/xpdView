@@ -1118,9 +1118,13 @@ class Display(QtGui.QMainWindow):
         None
 
         """
+        self.integration_dock.setAllowedAreas(QtCore.Qt.LeftDockWidgetArea)
         self.integration_dock.setFloating(False)
+        self.img_dock.setAllowedAreas(QtCore.Qt.LeftDockWidgetArea)
         self.img_dock.setFloating(False)
+        self.plot_dock.setAllowedAreas(QtCore.Qt.RightDockWidgetArea)
         self.plot_dock.setFloating(False)
+        self.waterfall_dock.setAllowedAreas(QtCore.Qt.RightDockWidgetArea)
         self.waterfall_dock.setFloating(False)
 
     def add_func(self, func):
